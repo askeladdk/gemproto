@@ -79,7 +79,7 @@ func SingleClientCertificate(cert tls.Certificate) GetCertificateFunc {
 //	  // handle error
 //	}
 //	client := gemproto.Client{
-//	  GetCertificate: gemproto.SingleCertificate(cert),
+//	  GetCertificate: gemproto.SingleClientCertificate(cert),
 //	}
 //	// ...
 //
@@ -96,10 +96,19 @@ func SingleClientCertificate(cert tls.Certificate) GetCertificateFunc {
 //	}
 //	// ...
 type Client struct {
+	// ConnectTimeout sets the idle timeout.
 	ConnectTimeout time.Duration
-	ReadTimeout    time.Duration
-	WriteTimeout   time.Duration
-	HostsFile      *HostsFile
+
+	// ReadTimeout sets the read timeout.
+	ReadTimeout time.Duration
+
+	// WriteTimeout sets the write timeout.
+	WriteTimeout time.Duration
+
+	// HostsFile is optional and specifies to verify hosts.
+	HostsFile *HostsFile
+
+	// GetCertificate is optional and maps hostnames to client certificates.
 	GetCertificate GetCertificateFunc
 }
 

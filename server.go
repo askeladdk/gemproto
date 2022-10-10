@@ -48,13 +48,14 @@ type responseWriter struct {
 	wroteHeader bool
 }
 
-func (rw *responseWriter) writeHeader() {
+func (rw *responseWriter) writeHeader() error {
 	if !rw.wroteHeader {
 		rw.wroteHeader = true
 		if rw.statusCode >= 10 {
-			_ = reply(rw.w, rw.statusCode, rw.metadata)
+			return reply(rw.w, rw.statusCode, rw.metadata)
 		}
 	}
+	return nil
 }
 
 func (rw *responseWriter) WriteHeader(statusCode int, metadata string) {
@@ -62,7 +63,9 @@ func (rw *responseWriter) WriteHeader(statusCode int, metadata string) {
 }
 
 func (rw *responseWriter) Write(p []byte) (int, error) {
-	rw.writeHeader()
+	if err := rw.writeHeader(); err != nil {
+		return 0, err
+	}
 	return rw.w.Write(p)
 }
 
@@ -96,6 +99,11 @@ type Server struct {
 	// WriteTimeout sets the maximum duration before
 	// timing out on writing an outgoing response.
 	WriteTimeout time.Duration
+
+	// Insecure disables TLS.
+	// It should only be set if the server is behind a reverse proxy.
+	// Insecure servers do not support Server Name Indication (SNI).
+	Insecure bool
 }
 
 func (srv *Server) logf(format string, v ...any) {
@@ -124,13 +132,15 @@ func (srv *Server) ListenAndServe(ctx context.Context) error {
 // Serve starts the server loop and listens on a custom listener.
 // The server loop ends when the passed context is cancelled.
 func (srv *Server) Serve(ctx context.Context, l net.Listener) error {
-	if srv.TLSConfig == nil {
-		return errors.New("gemproto: nil Server.TLSConfig")
-	} else if len(srv.TLSConfig.Certificates) == 0 && srv.TLSConfig.GetCertificate == nil {
-		return errors.New("gemproto: no Server.TLSConfig certificates")
-	}
+	if !srv.Insecure {
+		if srv.TLSConfig == nil {
+			return errors.New("gemproto: nil Server.TLSConfig")
+		} else if len(srv.TLSConfig.Certificates) == 0 && srv.TLSConfig.GetCertificate == nil {
+			return errors.New("gemproto: no Server.TLSConfig certificates")
+		}
 
-	l = tls.NewListener(l, srv.TLSConfig)
+		l = tls.NewListener(l, srv.TLSConfig)
+	}
 
 	var closed int32
 
@@ -141,13 +151,15 @@ func (srv *Server) Serve(ctx context.Context, l net.Listener) error {
 	}()
 
 	const maxBackoff = 1 * time.Second
-	backoff := 5 * time.Millisecond
+	const defBackoff = 5 * time.Millisecond
+	backoff := defBackoff
 
 	for {
 		conn, err := l.Accept()
 
 		if err != nil {
-			if ne, ok := err.(net.Error); ok && ne.Timeout() {
+			var ne net.Error
+			if errors.As(err, &ne) && ne.Timeout() {
 				srv.logf("gemproto: accept timeout: %v; retrying in %v", err, backoff)
 				time.Sleep(backoff)
 				backoff *= 2
@@ -165,7 +177,7 @@ func (srv *Server) Serve(ctx context.Context, l net.Listener) error {
 			return err
 		}
 
-		backoff = 0
+		backoff = defBackoff
 		go srv.serve(ctx, conn)
 	}
 }
@@ -190,14 +202,12 @@ func (srv *Server) serve(ctx context.Context, conn net.Conn) {
 		_ = conn.SetReadDeadline(now.Add(srv.WriteTimeout))
 	}
 
-	srv.handshake(ctx, conn.(*tls.Conn))
-}
-
-func (srv *Server) handshake(ctx context.Context, conn *tls.Conn) {
-	if err := conn.HandshakeContext(ctx); err != nil {
-		srv.logf("gemproto: tls handshake failed: %s", err)
-		_ = reply(conn, StatusClientCertificateNotValid, err.Error())
-		return
+	if tlsConn, ok := conn.(*tls.Conn); ok {
+		if err := tlsConn.HandshakeContext(ctx); err != nil {
+			srv.logf("gemproto: tls handshake failed: %s", err)
+			_ = reply(conn, StatusClientCertificateNotValid, err.Error())
+			return
+		}
 	}
 
 	if err := srv.respond(ctx, conn); err != nil {
@@ -205,15 +215,22 @@ func (srv *Server) handshake(ctx context.Context, conn *tls.Conn) {
 	}
 }
 
-func (srv *Server) respond(ctx context.Context, conn *tls.Conn) error {
+func (srv *Server) respond(ctx context.Context, conn net.Conn) error {
 	rawURL, err := readHeaderLine(conn, 1026)
-	if err == errHeaderLineTooLong {
+	if errors.Is(err, errHeaderLineTooLong) {
 		return reply(conn, StatusBadRequest, "request line too long")
 	} else if err != nil { // i/o error
 		return err
 	}
 
-	connState := conn.ConnectionState()
+	var connState *tls.ConnectionState
+	var serverName string
+
+	if tlsConn, ok := conn.(*tls.Conn); ok {
+		cs := tlsConn.ConnectionState()
+		connState = &cs
+		serverName = connState.ServerName
+	}
 
 	u, err := url.Parse(rawURL)
 	if err != nil {
@@ -222,15 +239,15 @@ func (srv *Server) respond(ctx context.Context, conn *tls.Conn) error {
 
 	if u.Scheme == "" && u.Host == "" {
 		u.Scheme = "gemini"
-		u.Host = connState.ServerName
+		u.Host = serverName
 	}
 
 	req := Request{
 		URL:        u,
 		RequestURI: rawURL,
 		RemoteAddr: conn.RemoteAddr().String(),
-		Host:       connState.ServerName,
-		TLS:        &connState,
+		Host:       serverName,
+		TLS:        connState,
 		ctx:        ctx,
 	}
 
@@ -239,7 +256,8 @@ func (srv *Server) respond(ctx context.Context, conn *tls.Conn) error {
 		statusCode: StatusOK,
 		metadata:   gemtext.MIMEType,
 	}
-	defer rw.writeHeader()
+
+	defer func() { _ = rw.writeHeader() }()
 
 	handler := srv.Handler
 	if handler == nil {
