@@ -6,6 +6,7 @@ import (
 
 	"github.com/askeladdk/gemproto"
 	"github.com/askeladdk/gemproto/gemtest"
+	"github.com/askeladdk/gemproto/internal/require"
 )
 
 func TestServeMuxSNI(t *testing.T) {
@@ -40,8 +41,8 @@ func TestServeMuxSNI(t *testing.T) {
 		r := gemtest.NewRequest(testcase.URL)
 
 		mux.ServeGemini(w, r)
-		assertEqual(t, gemproto.StatusOK, w.Code)
-		assertEqual(t, testcase.Expected, w.Body.String())
+		require.Equal(t, gemproto.StatusOK, w.Code)
+		require.Equal(t, testcase.Expected, w.Body.String())
 	}
 }
 
@@ -60,6 +61,6 @@ func TestServeMuxMount(t *testing.T) {
 	r := gemtest.NewRequest("/hello/index.gmi")
 
 	mux2.ServeGemini(w, r)
-	assertEqual(t, gemproto.StatusOK, w.Code)
-	assertEqual(t, "hello\n", w.Body.String())
+	require.Equal(t, gemproto.StatusOK, w.Code)
+	require.Equal(t, "hello\n", w.Body.String())
 }

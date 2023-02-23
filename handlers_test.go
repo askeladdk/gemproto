@@ -6,6 +6,7 @@ import (
 
 	"github.com/askeladdk/gemproto"
 	"github.com/askeladdk/gemproto/gemtest"
+	"github.com/askeladdk/gemproto/internal/require"
 )
 
 func TestInput(t *testing.T) {
@@ -22,14 +23,14 @@ func TestInput(t *testing.T) {
 	w := gemtest.NewRecorder()
 	r := gemtest.NewRequest("/index.gmi")
 	mux.ServeGemini(w, r)
-	assertEqual(t, gemproto.StatusInput, w.Code)
-	assertEqual(t, "your name?", w.Meta)
+	require.Equal(t, gemproto.StatusInput, w.Code)
+	require.Equal(t, "your name?", w.Meta)
 
 	w2 := gemtest.NewRecorder()
 	r2 := gemtest.NewRequest("/index.gmi?teh%20gopher")
 	mux.ServeGemini(w2, r2)
-	assertEqual(t, gemproto.StatusOK, w2.Code)
-	assertEqual(t, "hello teh gopher\n", w2.Body.String())
+	require.Equal(t, gemproto.StatusOK, w2.Code)
+	require.Equal(t, "hello teh gopher\n", w2.Body.String())
 }
 
 func TestRedirect(t *testing.T) {
@@ -41,6 +42,6 @@ func TestRedirect(t *testing.T) {
 	w := gemtest.NewRecorder()
 	r := gemtest.NewRequest("gemini://example.com/hello.gmi")
 	mux.ServeGemini(w, r)
-	assertEqual(t, gemproto.StatusPermanentRedirect, w.Code)
-	assertEqual(t, "gemini://example.com/", w.Meta)
+	require.Equal(t, gemproto.StatusPermanentRedirect, w.Code)
+	require.Equal(t, "gemini://example.com/", w.Meta)
 }

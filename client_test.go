@@ -10,6 +10,7 @@ import (
 	"github.com/askeladdk/gemproto"
 	"github.com/askeladdk/gemproto/gemtest"
 	"github.com/askeladdk/gemproto/gemtext"
+	"github.com/askeladdk/gemproto/internal/require"
 )
 
 func TestClientGet(t *testing.T) {
@@ -23,15 +24,15 @@ func TestClientGet(t *testing.T) {
 	defer server.Close()
 
 	res, err := client.Get(server.URL)
-	requireNoError(t, err)
+	require.NoError(t, err)
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
-	requireNoError(t, err)
+	require.NoError(t, err)
 
-	assertEqual(t, body, []byte("hello world"))
-	assertEqual(t, gemproto.StatusOK, res.StatusCode)
-	assertEqual(t, gemtext.MIMEType, res.Meta)
+	require.Equal(t, body, []byte("hello world"))
+	require.Equal(t, gemproto.StatusOK, res.StatusCode)
+	require.Equal(t, gemtext.MIMEType, res.Meta)
 }
 
 func TestClientRedirect(t *testing.T) {
@@ -53,8 +54,8 @@ func TestClientRedirect(t *testing.T) {
 
 	var redirerr gemproto.RedirectError
 	if errors.As(err, &redirerr) {
-		assertEqual(t, server.URL+"/a", redirerr.LastURL)
-		assertEqual(t, server.URL+"/", redirerr.NextURL)
+		require.Equal(t, server.URL+"/a", redirerr.LastURL)
+		require.Equal(t, server.URL+"/", redirerr.NextURL)
 		return
 	}
 

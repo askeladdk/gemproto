@@ -5,6 +5,7 @@ import (
 
 	"github.com/askeladdk/gemproto"
 	"github.com/askeladdk/gemproto/gemtest"
+	"github.com/askeladdk/gemproto/internal/require"
 )
 
 func TestServer(t *testing.T) {
@@ -16,13 +17,9 @@ func TestServer(t *testing.T) {
 	client := gemproto.Client{}
 
 	res, err := client.Get(server.URL)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	if res.StatusCode != gemproto.StatusOK {
-		t.Fatal(res.StatusCode)
-	}
+	require.NoError(t, err)
+	require.Equal(t, gemproto.StatusOK, res.StatusCode)
 }
 
 func TestResponseRecorder(t *testing.T) {
@@ -35,15 +32,7 @@ func TestResponseRecorder(t *testing.T) {
 	r := gemtest.NewRequest("/")
 	h.ServeGemini(w, r)
 
-	if w.Code != gemproto.StatusOK {
-		t.Error(w.Code)
-	}
-
-	if w.Meta != "text/plain" {
-		t.Error(w.Meta)
-	}
-
-	if s := w.Body.String(); s != "hello world" {
-		t.Error(s)
-	}
+	require.Equal(t, gemproto.StatusOK, w.Code)
+	require.Equal(t, "text/plain", w.Meta)
+	require.Equal(t, "hello world", w.Body.String())
 }
