@@ -49,16 +49,11 @@ type Host struct {
 //
 // address<SPACE>algorithm<SPACE>fingerprint<SPACE>expiry<LF>
 //
-// - address is the domain:port of the remote host.
-//
-// - port is the port number of the remote host.
-//
-// - algorithm is the hashing algorithm used to compute the fingerprint.
-//
-// - fingerprint is the base64 encoding of the hash of the certificate's
-// Subject Public Key Info (SPKI) section.
-//
-// - expiry is the expiration date of the certificate.
+//   - address is the domain:port of the remote host.
+//   - port is the port number of the remote host.
+//   - algorithm is the hashing algorithm used to compute the fingerprint.
+//   - fingerprint is the base64 encoding of the hash of the certificate's Subject Public Key Info (SPKI) section.
+//   - expiry is the expiration date of the certificate.
 //
 // Later entries overwrite older entries.
 // Lines that do not conform to this format are ignored.

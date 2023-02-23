@@ -180,10 +180,16 @@ func (c *Client) do(r *Request, d *dialer, redirects int) (*Response, error) {
 
 	now := time.Now()
 	if c.ReadTimeout > 0 {
-		_ = conn.SetReadDeadline(now.Add(c.ReadTimeout))
+		if err := conn.SetReadDeadline(now.Add(c.ReadTimeout)); err != nil {
+			defer conn.Close()
+			return nil, err
+		}
 	}
 	if c.WriteTimeout > 0 {
-		_ = conn.SetWriteDeadline(now.Add(c.WriteTimeout))
+		if err := conn.SetWriteDeadline(now.Add(c.WriteTimeout)); err != nil {
+			defer conn.Close()
+			return nil, err
+		}
 	}
 
 	status, meta, err := c.doReqRes(conn, r.URL.String())

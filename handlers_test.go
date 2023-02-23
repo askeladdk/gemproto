@@ -45,3 +45,15 @@ func TestRedirect(t *testing.T) {
 	require.Equal(t, gemproto.StatusPermanentRedirect, w.Code)
 	require.Equal(t, "gemini://example.com/", w.Meta)
 }
+
+func TestNotFoundHandler(t *testing.T) {
+	t.Parallel()
+
+	mux := gemproto.NewServeMux()
+	mux.Handle("/", gemproto.NotFoundHandler())
+
+	w := gemtest.NewRecorder()
+	r := gemtest.NewRequest("/")
+	mux.ServeGemini(w, r)
+	require.Equal(t, gemproto.StatusNotFound, w.Code)
+}
