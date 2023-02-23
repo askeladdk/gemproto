@@ -9,7 +9,6 @@ package gemproto
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -290,9 +289,7 @@ func (fsrv fileServer) serveDir(w ResponseWriter, r *Request, f fs.File, name st
 		return
 	}
 
-	b := gemtext.Builder{
-		Buffer: bytes.NewBuffer(make([]byte, 0, 1024)),
-	}
+	b := gemtext.NewBuilder(make([]byte, 0, 1024))
 
 	if name == "/" {
 		b.Heading(name)
