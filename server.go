@@ -185,13 +185,11 @@ func (srv *Server) Serve(ctx context.Context, l net.Listener) error {
 func (srv *Server) serve(ctx context.Context, conn net.Conn) {
 	defer func() {
 		if v := recover(); v != nil {
-			srv.logf("recover: %v", v)
+			srv.logf("gemproto: recover: %v", v)
 		}
 	}()
 
 	defer conn.Close()
-
-	srv.logf("gemproto: incoming connection from %s", conn.RemoteAddr())
 
 	now := time.Now()
 	if srv.ReadTimeout > 0 {
@@ -205,7 +203,6 @@ func (srv *Server) serve(ctx context.Context, conn net.Conn) {
 	if tlsConn, ok := conn.(*tls.Conn); ok {
 		if err := tlsConn.HandshakeContext(ctx); err != nil {
 			srv.logf("gemproto: tls handshake failed: %s", err)
-			_ = reply(conn, StatusClientCertificateNotValid, err.Error())
 			return
 		}
 	}
