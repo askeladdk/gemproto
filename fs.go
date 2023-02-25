@@ -9,6 +9,7 @@ package gemproto
 
 import (
 	"bufio"
+	"embed"
 	"errors"
 	"fmt"
 	"io"
@@ -107,7 +108,10 @@ func FileServer(root fs.FS, flags FileServerFlags) Handler {
 
 func (fsrv fileServer) ServeGemini(w ResponseWriter, r *Request) {
 	upath := r.URL.Path
-	if !strings.HasPrefix(upath, "/") {
+	// embed.FS does not work with leading /
+	if _, isembed := fsrv.Root.(embed.FS); isembed {
+		upath = strings.TrimPrefix(upath, "/")
+	} else if !strings.HasPrefix(upath, "/") {
 		upath = "/" + upath
 		r.URL.Path = upath
 	}
