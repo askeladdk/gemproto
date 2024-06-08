@@ -211,7 +211,7 @@ func (fsrv fileServer) serveFile(w ResponseWriter, r *Request, fsys fs.FS, name 
 		index := strings.TrimSuffix(name, "/") + indexPage
 		if ff, err := fsys.Open(index); err == nil {
 			defer ff.Close()
-			serveContent(w, r, ff, index, "")
+			serveContent(w, ff, index, "")
 			return
 		}
 
@@ -220,11 +220,11 @@ func (fsrv fileServer) serveFile(w ResponseWriter, r *Request, fsys fs.FS, name 
 			return
 		}
 
-		fsrv.serveDir(w, r, f, name)
+		fsrv.serveDir(w, f, name)
 		return
 	}
 
-	serveContent(w, r, f, name, metadata)
+	serveContent(w, f, name, metadata)
 }
 
 type anyDirs interface {
@@ -274,7 +274,7 @@ type readdirFS interface {
 	Readdir(count int) ([]fs.FileInfo, error)
 }
 
-func (fsrv fileServer) serveDir(w ResponseWriter, r *Request, f fs.File, name string) {
+func (fsrv fileServer) serveDir(w ResponseWriter, f fs.File, name string) {
 	var entries anyDirs
 	var err error
 
@@ -323,7 +323,7 @@ func (fsrv fileServer) serveDir(w ResponseWriter, r *Request, f fs.File, name st
 	_, _ = w.Write(b.Bytes())
 }
 
-func serveContent(w ResponseWriter, r *Request, f fs.File, name, mimetype string) {
+func serveContent(w ResponseWriter, f fs.File, name, mimetype string) {
 	var toappend string
 	if strings.HasPrefix(mimetype, ";") {
 		toappend, mimetype = mimetype, ""
