@@ -83,21 +83,6 @@ func (r *Request) Context() context.Context {
 	return r.ctx
 }
 
-// WithContext returns a shallow copy of r with its context changed
-// to ctx. The provided ctx must not be nil.
-func (r *Request) WithContext(ctx context.Context) *Request {
-	if ctx == nil {
-		panic("nil context")
-	}
-
-	u2 := *r.URL
-	r2 := new(Request)
-	*r2 = *r
-	r2.ctx = ctx
-	r2.URL = &u2
-	return r2
-}
-
 // GetInput returns the unescaped query string.
 func (r *Request) GetInput() (string, bool) {
 	if rq := r.URL.RawQuery; rq != "" {
