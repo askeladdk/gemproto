@@ -6,30 +6,30 @@ import (
 	"testing"
 )
 
-func NoError(t testing.TB, err error, args ...any) {
+func NoError(tb testing.TB, err error, args ...any) {
+	tb.Helper()
 	if err != nil {
-		t.Helper()
-		t.Fatal(append([]any{err}, args...)...)
+		tb.Fatal(append([]any{err}, args...)...)
 	}
 }
 
-func ErrorIs(t testing.TB, err, target error, args ...any) {
+func ErrorIs(tb testing.TB, err, target error, args ...any) {
+	tb.Helper()
 	if !errors.Is(err, target) {
-		t.Helper()
-		t.Fatal(append([]any{err, "is not", target}, args...)...)
+		tb.Fatal(append([]any{err, "is not", target}, args...)...)
 	}
 }
 
-func Equal[E any](t testing.TB, expected, got E, args ...any) {
+func Equal[E any](tb testing.TB, expected, got E, args ...any) {
+	tb.Helper()
 	if !reflect.DeepEqual(expected, got) {
-		t.Helper()
-		t.Fatal(append([]any{expected, "is not", got}, args...)...)
+		tb.Fatal(append([]any{expected, "is not", got}, args...)...)
 	}
 }
 
-func True(t testing.TB, cond bool, args ...any) {
+func True(tb testing.TB, cond bool, args ...any) {
+	tb.Helper()
 	if !cond {
-		t.Helper()
-		t.Fatal(append([]any{"is false"}, args...)...)
+		tb.Fatal(append([]any{"is false"}, args...)...)
 	}
 }

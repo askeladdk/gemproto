@@ -260,14 +260,16 @@ func (d dirEntryDirs) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 func (d dirEntryDirs) Less(i, j int) bool { return d[i].Name() < d[j].Name() }
 
 func formatFileSize(size int64) (int64, string) {
-	if size >= 1<<30 {
+	switch {
+	case size >= 1<<30:
 		return size / (1 << 30), "G"
-	} else if size >= 1<<20 {
+	case size >= 1<<20:
 		return size / (1 << 20), "M"
-	} else if size >= 1<<10 {
+	case size >= 1<<10:
 		return size / (1 << 10), "K"
+	default:
+		return size, "B"
 	}
-	return size, "B"
 }
 
 type readdirFS interface {

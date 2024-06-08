@@ -1,0 +1,37 @@
+linters:
+  disable-all: true
+  enable:
+    - asasalint
+    - errcheck
+    - errname
+    - errorlint
+    - exportloopref
+    - gocritic
+    - gocyclo
+    - godot
+    - gofmt
+    - goimports
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - nilerr
+    - nilnil
+    - reassign
+    - revive
+    - staticcheck
+    - tenv
+    - testableexamples
+    - thelper
+    - tparallel
+    - typecheck
+    - unused
+
+linters-settings:
+  nakedret:
+    max-func-lines: 1
+  revive:
+    rules:
+      - name: unused-parameter
+        disabled: true

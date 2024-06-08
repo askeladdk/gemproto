@@ -158,7 +158,7 @@ func (mux *ServeMux) handler(host, path string) (h Handler, pattern string) {
 	if h == nil {
 		h, pattern = HandlerFunc(NotFound), ""
 	}
-	return
+	return h, pattern
 }
 
 func (mux *ServeMux) match(path string) (h Handler, pattern string) {

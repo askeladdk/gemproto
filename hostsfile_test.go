@@ -31,8 +31,6 @@ func TestHostsFile(t *testing.T) {
 }
 
 func TestHostsFileTOFU(t *testing.T) {
-	t.Parallel()
-
 	hf := gemproto.NewHostsFile(io.Discard)
 
 	t.Run("create", func(t *testing.T) {

@@ -27,10 +27,10 @@ func TestInput(t *testing.T) {
 	require.Equal(t, "your name?", w.Meta)
 
 	w2 := gemtest.NewRecorder()
-	r2 := gemtest.NewRequest("/index.gmi?teh%20gopher")
+	r2 := gemtest.NewRequest("/index.gmi?the%20gopher")
 	mux.ServeGemini(w2, r2)
 	require.Equal(t, gemproto.StatusOK, w2.Code)
-	require.Equal(t, "hello teh gopher\n", w2.Body.String())
+	require.Equal(t, "hello the gopher\n", w2.Body.String())
 }
 
 func TestRedirect(t *testing.T) {

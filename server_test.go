@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509/pkix"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -45,7 +46,7 @@ func TestServer(t *testing.T) {
 	defer cancel()
 
 	go func() {
-		if err := s.ListenAndServe(ctx); err != gemproto.ErrServerClosed {
+		if err := s.ListenAndServe(ctx); !errors.Is(err, gemproto.ErrServerClosed) {
 			t.Error(err)
 		}
 	}()
@@ -124,7 +125,7 @@ func TestServerBackoff(t *testing.T) {
 	defer cancel()
 
 	go func() {
-		if err := s.Serve(ctx, &listener); err != gemproto.ErrServerClosed {
+		if err := s.Serve(ctx, &listener); !errors.Is(err, gemproto.ErrServerClosed) {
 			t.Error(err)
 		}
 	}()

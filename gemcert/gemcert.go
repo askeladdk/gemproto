@@ -173,14 +173,14 @@ func StoreX509KeyPair(cert tls.Certificate, certFile, keyFile string) error {
 // Certificate.Leaf will contain the parsed form of the certificate.
 func LoadX509KeyPair(certFile, keyFile string) (cert tls.Certificate, err error) {
 	if cert, err = tls.LoadX509KeyPair(certFile, keyFile); err != nil {
-		return
+		return cert, err
 	}
 
 	if cert.Leaf == nil {
 		cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
 	}
 
-	return
+	return cert, err
 }
 
 // Fingerprint returns the hexadecimal encoding of the sha256 hash

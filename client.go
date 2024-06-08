@@ -239,12 +239,12 @@ func (c *Client) do(r *Request, d *dialer, redirects int) (*Response, error) {
 
 func (c *Client) doReqRes(conn net.Conn, rawURL string) (status, meta string, err error) {
 	if _, err = fmt.Fprintf(conn, "%s\r\n", rawURL); err != nil {
-		return
+		return status, meta, err
 	}
 
 	var line string
 	if line, err = readHeaderLine(conn, 1029); err != nil {
-		return
+		return status, meta, err
 	}
 
 	// status is required but meta is optional
@@ -252,5 +252,5 @@ func (c *Client) doReqRes(conn net.Conn, rawURL string) (status, meta string, er
 		err = ErrInvalidResponse
 	}
 
-	return
+	return status, meta, err
 }

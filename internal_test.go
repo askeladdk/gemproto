@@ -45,7 +45,9 @@ func TestReadHeaderLine(t *testing.T) {
 			Expected: strings.Repeat(" ", 1027),
 		},
 	} {
+		testcase := testcase
 		t.Run(testcase.Name, func(t *testing.T) {
+			t.Parallel()
 			line, err := readHeaderLine(strings.NewReader(testcase.Line), 1029)
 			if (err != nil) != testcase.Err {
 				t.Error(err)
