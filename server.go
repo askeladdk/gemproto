@@ -197,7 +197,7 @@ func (srv *Server) serve(ctx context.Context, conn net.Conn) {
 	}
 
 	if srv.WriteTimeout > 0 {
-		_ = conn.SetReadDeadline(now.Add(srv.WriteTimeout))
+		_ = conn.SetWriteDeadline(now.Add(srv.WriteTimeout))
 	}
 
 	if tlsConn, ok := conn.(*tls.Conn); ok {
