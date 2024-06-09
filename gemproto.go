@@ -10,7 +10,7 @@ import (
 )
 
 // Gemini status codes as described in the specification.
-// See: https://gemini.circumlunar.space/docs/specification.gmi
+// See: https://geminiprotocol.net/docs/specification.gmi
 const (
 	StatusInput                          = 10
 	StatusSensitiveInput                 = 11
