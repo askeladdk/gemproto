@@ -9,7 +9,9 @@ Package gemproto provides client and server implementations for the Gemini proto
 
 ## Install
 
-> go get -u github.com/askeladdk/gemproto
+```sh
+go get -u github.com/askeladdk/gemproto
+```
 
 ## Quickstart
 
