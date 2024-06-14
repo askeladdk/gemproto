@@ -94,6 +94,10 @@ func (r *Request) GetInput() (string, bool) {
 
 // Response is the response received from a server.
 type Response struct {
+	// URL is the absolute URL that sent the response.
+	// It can be different from the request URL if the request was redirected.
+	URL *url.URL
+
 	// StatusCode is the response code.
 	StatusCode int
 

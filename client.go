@@ -230,6 +230,7 @@ func (c *Client) do(r *Request, d *dialer, redirects int) (*Response, error) {
 	}
 
 	return &Response{
+		URL:        r.URL,
 		StatusCode: statusCode,
 		Meta:       meta,
 		Body:       body,

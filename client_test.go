@@ -55,6 +55,24 @@ func TestClientRedirect(t *testing.T) {
 	client := gemproto.Client{}
 
 	handler := func(w gemproto.ResponseWriter, r *gemproto.Request) {
+		if r.URL.Path == "/index.gmi" {
+			gemproto.Redirect(w, r, "/", gemproto.StatusPermanentRedirect)
+			return
+		}
+	}
+
+	server := gemtest.NewServer(gemproto.HandlerFunc(handler))
+	defer server.Close()
+
+	res, err := client.Get(server.URL + "/index.gmi")
+	require.NoError(t, err)
+	require.Equal(t, server.URL+"/", res.URL.String())
+}
+
+func TestClientRedirectTooMany(t *testing.T) {
+	client := gemproto.Client{}
+
+	handler := func(w gemproto.ResponseWriter, r *gemproto.Request) {
 		if r.URL.Path != "/" {
 			i := strings.LastIndexByte(r.URL.Path, '/')
 			rest := r.URL.Path[:i]
